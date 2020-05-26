@@ -1,64 +1,68 @@
 #include <omp.h>
-#include <string>
 #include <iostream>
 #include <stdexcept>
-#include <map>
 #include <algorithm>
+#include <vector>
 
-// Дана последовательность символов С = {с0…сn–1}. Дан набор из N пар кодирующих символов (ai,bi),
-// т.е. все символы строки ai заменяются на bi. Создать многопоточное приложение, кодирующее строку С следующим образом:
-// строка разделяется на подстроки и каждый поток осуществляет кодирование своей подстроки.
-// Количество символов с последовательности, количество кодирующих пар и потоков являются входными параметрами программы,
-// количество символов в строке может быть не кратно количеству потоков.
+// Дана последовательность натуральных чисел {a0…an–1}. Создать
+// OpenMP-приложение для вычисления общей суммы и всех промежуточных
+// сумм простых чисел последовательности.
+
+const unsigned int MIN_THREAD_NUMBER = 1;
+const unsigned int MAX_THREAD_NUMBER = 8;
+
+bool isNotPrime(unsigned int n) {
+  if (n > 1) {
+    for (size_t i = 2; i < n; ++i) {
+      if (n % i == 0) {
+        return true;
+      }
+    }
+  return false;
+  }
+  return true;
+}
 
 int main(int argc, char *argv[]) {
 
   /* Аргументы программы:
-  1. Исходная последовательность, где будет производиться замена символов
-  2. Количество кодирующих пар
-  3. Количество потоков
-  После обработки аргументов нужно последовательно ввести все кодирующие пары.
+  1. Последовательность натуральных чисел
+  После обработки аргументов нужно будет ввести количество потоков.
   */
 
-  try {
-    if (argc != 4) {
-    throw std::invalid_argument("Incorrect amount of arguments");
-    }
-  } catch (const std::invalid_argument &ex) {
-    std::cerr << ex.what() << '\n';
-    return 1;
+  std::vector<unsigned int> sequence;
+  for (size_t i = 0; i < argc - 1; ++i) {
+      sequence.push_back(std::atoi(argv[i + 1]));
+      std::cout << std::atoi(argv[i + 1]) << " ";
   }
 
-  std::string consequence = argv[1];  // исходная последовательность, где будет производиться замена символов
-  std::cout << "Consequence: " << consequence << '\n';
-
-  const size_t numberOfCodePairs = std::atoi(argv[2]);  // количество кодирующих пар
-  std::cout << "Number of code pairs: " << numberOfCodePairs << '\n';
-
-  unsigned int threadsAmount = std::atoi(argv[3]);  // количество потоков
-  if (threadsAmount > 4) {
-    threadsAmount = 4;
+  unsigned int numThreads = MIN_THREAD_NUMBER;
+  std::cout << "\nEnter number of threads: ";
+  std::cin >> numThreads;
+  if (numThreads < MIN_THREAD_NUMBER) {
+    numThreads = MIN_THREAD_NUMBER;
+  } else if (numThreads > MAX_THREAD_NUMBER) {
+    numThreads = MAX_THREAD_NUMBER;
   }
-  omp_set_num_threads(threadsAmount);
-  std::cout << "Amount of threads: " << threadsAmount << '\n';
+  omp_set_num_threads(numThreads);
+  std::cout << "\nNumber of threads: " << numThreads << '\n';
 
-  std::map <char, char> codePairs;  // чтение кодирующих пар
-  for (size_t n = 0; n < numberOfCodePairs; ++n) {
-    std::cout << "\nInsert pair #" << n + 1 << ": ";
-    char key, value;
-    std::cin >> key >> value;
-    codePairs.emplace(key, value);
-  }
+  sequence.erase(std::remove_if(sequence.begin(), sequence.end(), isNotPrime), sequence.end());
 
-#pragma omp parallel for schedule(static)
-  for (size_t i = 0; i < consequence.length(); ++i) {
-    for (auto const& [key, value] : codePairs) {
-      if (consequence[i] == key) {
-        consequence[i] = value;
-      }
-    }
+  unsigned int sum = 0;
+  std::vector<unsigned int> runningTotals(sequence.size(), 0);
+
+#pragma omp parallel for schedule(static) reduction(+:sum)
+  for (size_t i = 0; i < sequence.size(); ++i) {
+    sum += sequence[i];
+    runningTotals[i] += sum;
   }
 
-  std::cout << "\nFinal consequence: " << consequence << '\n';
+  std::cout << "\nRunning totals: ";
+  for (size_t runningTotal : runningTotals) {
+    std::cout << runningTotal << " ";
+  }
+  std::cout << "\n\nTotal sum of prime number: " << sum << '\n';
+
   return 0;
 }
