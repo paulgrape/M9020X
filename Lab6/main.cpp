@@ -14,7 +14,7 @@
 int main(int argc, char *argv[]) {
 
   /* Аргументы программы:
-  1. Исходная строка, где будет производиться замена символов
+  1. Исходная последовательность, где будет производиться замена символов
   2. Количество кодирующих пар
   3. Количество потоков
   После обработки аргументов нужно последовательно ввести все кодирующие пары.
@@ -29,7 +29,7 @@ int main(int argc, char *argv[]) {
     return 1;
   }
 
-  std::string consequence = argv[1];  // исходная строка, где будет производиться замена символов
+  std::string consequence = argv[1];  // исходная последовательность, где будет производиться замена символов
   std::cout << "Consequence: " << consequence << '\n';
 
   const size_t numberOfCodePairs = std::atoi(argv[2]);  // количество кодирующих пар
@@ -44,10 +44,10 @@ int main(int argc, char *argv[]) {
 
   std::map <char, char> codePairs;  // чтение кодирующих пар
   for (size_t n = 0; n < numberOfCodePairs; ++n) {
-    std::cout << "\nInsert " << n + 1 << " pair: ";
+    std::cout << "\nInsert pair #" << n + 1 << ": ";
     char key, value;
     std::cin >> key >> value;
-    codePairs.emplace(std::pair<char, char>(key, value));
+    codePairs.emplace(key, value);
   }
 
 #pragma omp parallel for schedule(static)
