@@ -4,9 +4,9 @@
 #include <algorithm>
 #include <vector>
 
-// Дана последовательность натуральных чисел {a0…an–1}. Создать
-// OpenMP-приложение для вычисления общей суммы и всех промежуточных
-// сумм простых чисел последовательности.
+/* Дана последовательность натуральных чисел {a0…an–1}. Создать OpenMP-приложение для вычисления общей суммы
+и всех промежуточных сумм простых чисел последовательности.
+*/
 
 const unsigned int MIN_THREAD_NUMBER = 1;
 const unsigned int MAX_THREAD_NUMBER = 8;
@@ -31,8 +31,8 @@ int main(int argc, char *argv[]) {
 
   std::vector<unsigned int> sequence;
   for (size_t i = 0; i < argc - 1; ++i) {
-      sequence.push_back(std::atoi(argv[i + 1]));
-      std::cout << std::atoi(argv[i + 1]) << " ";
+      sequence.push_back(std::stoi(argv[i + 1]));
+      std::cout << std::stoi(argv[i + 1]) << " ";
   }
 
   unsigned int numThreads = MIN_THREAD_NUMBER;
@@ -61,7 +61,7 @@ int main(int argc, char *argv[]) {
   for (size_t runningTotal : runningTotals) {
     std::cout << runningTotal << " ";
   }
-  std::cout << "\n\nTotal sum of prime number: " << sum << '\n';
+  std::cout << "\n\nTotal sum of prime numbers: " << sum << '\n';
 
   return 0;
 }
